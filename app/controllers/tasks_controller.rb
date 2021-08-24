@@ -1,4 +1,5 @@
 class TasksController < ApplicationController
+  before_action :set_task, only: [:show, :edit, :update, :destroy, :checkbox]
 
   # READ
   def index
@@ -6,7 +7,6 @@ class TasksController < ApplicationController
   end
 
   def show
-    @task = Task.find(params[:id])
   end
 
   # CREATE
@@ -23,11 +23,19 @@ class TasksController < ApplicationController
 
   # UPDATE
   def edit
-    @task = Task.find(params[:id])
   end
 
   def update
-    @task = Task.find(params[:id])
+    @task.update(task_params)
+
+    redirect_to tasks_path
+  end
+
+  def checkbox
+    @task.completed = !@task.completed
+    # Passes a "task" object to params which is an hash with 1 key-value pair
+    # Otherwise params.require(:task) cannot read the object
+    params[:task] = {completed: @task.completed}
     @task.update(task_params)
 
     redirect_to tasks_path
@@ -35,7 +43,6 @@ class TasksController < ApplicationController
 
   # DELETE
   def destroy
-    @task = Task.find(params[:id])
     @task.destroy
 
     redirect_to tasks_path
@@ -43,8 +50,12 @@ class TasksController < ApplicationController
 
   private
 
+  def set_task
+    @task = Task.find(params[:id])
+  end
+
   # security feature: makes sure only displayed form fields are passed in post body
   def task_params
-    params.require(:task).permit(:title, :details)
+    params.require(:task).permit(:title, :details, :completed)
   end
 end
